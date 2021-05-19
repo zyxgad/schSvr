@@ -1,0 +1,12 @@
+{{ define "user/verify.html" }}
+<h1>Verify your identity</h1>
+<h3>{{.msg}}</h3>
+<p>
+	If you don't know why you received this email, <b>don't click the link</b>.
+	That maybe someone input yours email address.
+	<hr/>
+	Please click this link in 15 minutes.
+	Click <a href="https://20210501.kpnm.waerba.com/web/user/captcha/email?t={{.token}}">here</a> to verify yours email<br/>
+	The link is not working? Input "<i>https://20210501.kpnm.waerba.com/web/user/captcha/email?t={{.token}}</i>" in yours browser address bar
+</p>
+{{ end }}

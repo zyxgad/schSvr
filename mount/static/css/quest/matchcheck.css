@@ -1,0 +1,62 @@
+
+*{
+	margin: 0;
+	padding: 0;
+}
+
+#match_body{
+	margin: auto;
+	margin-top: 50px;
+	margin-bottom: 70px;
+	width: 580px;
+}
+
+#match-info{
+	width: 100%;
+	margin-left: 5px;
+}
+
+#match-info-score::before{
+	content: "总分: ";
+}
+
+#match-answers{
+	width: 100%;
+	border: 1px solid #000000;
+}
+
+#match-answers-head, #match-answers-box{
+	width: 100%;
+}
+
+.match-answers-item{
+	width: 100%;
+	border: 1px solid #000000;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.match-answers-item>span{
+	min-height: 50px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+.match-answers-item-id{
+	width: 40px;
+	text-align: center;
+	line-height: 100%;
+}
+
+.match-answers-item-quest{
+	width: 340px;
+}
+
+.match-answers-item-answer{
+	width: 160px;
+}
+
+.match-answers-item-score{
+	width: 40px;
+}

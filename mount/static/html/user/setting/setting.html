@@ -1,0 +1,33 @@
+{{ define "user/setting/setting.html" }}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>user info</title>
+		<link rel="stylesheet" type="text/css" href="/web/static/css/user/setting/setting">
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
+		<script type="text/javascript" src="/web/static/js/user/setting/setting"></script>
+	</head>
+	<body>
+		<div id="user-info" style="display: none;">
+			<div id="user-info-head">
+				<input id="user-info-head-choose-file" style="opacity: 0;width: 0;height:0;" type="file" accept="image/png" />
+				<div id="user-info-head-choose-btn">
+					<img id="user-info-head-img" />
+				</div>
+				<input id="user-info-head-sure" type="button" value="commit header" style="display: none;" />
+			</div>
+			<hr/>
+			<div id="user-info-name">用户名: <span id="user-info-name-cont"></span></div>
+			<div id="user-info-nick">昵称: <span id="user-info-nick-cont"></span></div>
+			<hr/>
+			<div id="user-info-changepwd">
+				<p>原密码: <input id="user-info-changepwd-originalpwd" type="password" /></p>
+				<p>新密码: <input id="user-info-changepwd-newpwd" type="password" /></p>
+				<p>确认密码: <input id="user-info-changepwd-repeatnewpwd" type="password" /></p>
+				<input id="user-info-changepwd-button" type="button" value="Change password" />
+			</div>
+			<hr/>
+		</div>
+	</body>
+</html>
+{{ end }}

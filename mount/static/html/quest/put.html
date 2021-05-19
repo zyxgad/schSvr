@@ -1,0 +1,25 @@
+{{ define "quest/put.html" }}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Index</title>
+		<link rel="stylesheet" type="text/css" href="/web/static/css/quest/put">
+		<link rel="stylesheet" type="text/css" href="/web/static/css/util/font">
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
+		<script type="text/javascript" src="/web/static/js/quest/put"></script>
+	</head>
+	<body>
+		<div id="subject">
+			<div id="subject-question">
+				<span id="subject-question-title">问题:</span><textarea id="subject-question-text"></textarea>
+			</div>
+			<hr/>
+			<div id="subject-answer">
+				<span id="subject-answer-title">答案:</span>
+				<input id="subject-answer-text" type="text" value="" />
+			</div>
+			<input id="subject-submit-btn" type="button" value="提交" />
+		</div>
+	</body>
+</html>
+{{ end }}

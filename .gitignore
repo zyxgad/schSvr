@@ -1,0 +1,11 @@
+
+#Mac os
+.DS_Store
+
+#apps--
+#runtime
+/logs/
+/userdata/
+#tests
+/test/
+

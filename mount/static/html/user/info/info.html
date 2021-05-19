@@ -1,0 +1,22 @@
+{{ define "user/info/info.html" }}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>user info</title>
+		<link rel="stylesheet" type="text/css" href="/web/static/css/user/info/info">
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
+		<script type="text/javascript">
+			const userid = Number.parseInt("{{.userid}}");
+		</script>
+		<script type="text/javascript" src="/web/static/js/user/info/info"></script>
+	</head>
+	<body>
+		<div id="error-div" style="display: none;"></div>
+		<div id="user-info" style="display: none;">
+			<div id="user-info-name">用户名: <span id="user-info-name-cont"></span></div>
+			<div id="user-info-nick">昵称: <span id="user-info-nick-cont"></span></div>
+			<div id="user-info-head"><img id="user-info-head-img" /></div>
+		</div>
+	</body>
+</html>
+{{ end }}

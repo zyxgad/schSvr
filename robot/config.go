@@ -1,0 +1,6 @@
+
+package kpnmrobot
+
+
+func init(){
+}

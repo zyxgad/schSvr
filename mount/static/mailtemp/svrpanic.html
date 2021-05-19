@@ -1,0 +1,19 @@
+{{ define "svrpanic.html" }}
+<style>
+	#stacks .odd{
+		background-color: #aaddff;
+	}
+	#stacks .eve{
+		background-color: #6688aa;
+	}
+</style>
+<div>
+	<h1>Server Panic</h1>
+	<h3>{{.cause}}</h3>
+	<div id="stacks">
+		{{ range $ind, $line := .stacks }}
+		<p class="{{if odd $ind}}odd{{else}}eve{{end}}"> {{$line}} </p>
+		{{ end }}
+	</div>
+</div>
+{{ end }}

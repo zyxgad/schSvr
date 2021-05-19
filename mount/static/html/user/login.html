@@ -1,0 +1,39 @@
+{{ define "user/login.html" }}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Login</title>
+		<link rel="stylesheet" type="text/css" href="/web/static/css/util/animations">
+		<link rel="stylesheet" type="text/css" href="/web/static/css/user/login">
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
+		<script type="text/javascript" src="/web/static/js/user/login"></script>
+	</head>
+	<body>
+		<header id="header">
+		</header>
+		<div id="login-box">
+			<div id="login-box-username" class="login-box-content">
+				<p>
+					用户名: <input id="login-box-username-input" type="text" />
+				</p>
+				<span id="login-box-username-error" class="error-box" style="display: none;"></span>
+			</div>
+			<div id="login-box-password" class="login-box-content">
+				<p>
+					密码: <input id="login-box-password-input" type="password" />
+				</p>
+				<span id="login-box-password-error" class="error-box" style="display: none;"></span>
+			</div>
+			<div id="login-box-captcha" class="login-box-content">
+				<p>
+					<img id="login-box-captcha-img" alt="click to get captcha" /><input id="login-box-captcha-input" type="text" />
+				</p>
+				<span id="login-box-captcha-error" class="error-box" style="display: none;"></span>
+			</div>
+			<div id="login-box-error" style="display: none;"></div>
+			<input id="login-box-submit" type="button" value="Login" />
+		</div>
+		还没有用户? 在<a href="/web/user/register">这里</a>注册
+	</body>
+</html>
+{{ end }}
