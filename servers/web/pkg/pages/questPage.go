@@ -26,8 +26,8 @@ func (questPageSrc)putPostPage(cont *gin.Context){
 		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "the user is not login", ""))
 		return
 	}
-	quest := cont.PostForm("question")
-	answer := cont.PostForm("answer")
+	quest := util.CleanStr(cont.PostForm("question"))
+	answer := util.CleanStr(cont.PostForm("answer"))
 	if len(quest) == 0 || len(answer) == 0 {
 		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "the question/answer is illegal data", ""))
 		return
@@ -36,7 +36,7 @@ func (questPageSrc)putPostPage(cont *gin.Context){
 		"quest": quest,
 		"answer": answer,
 		"owner": user.Id,
-		"verified": true,
+		"verified": false,
 	})
 	cont.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -115,6 +115,7 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 			"data": muserid,
 		}, util.TimeDay)), 60 * 60 * 24, "/", "", false, true)
 
+		kses.RemoveSession(suuid, "questid")
 		kses.SetSession(&kses.SqlSessionValue{
 			Uuid: suuid,
 			Key: "ans_max",
@@ -148,15 +149,13 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 
 		ans_count := sqlMatchAnswerTable.DataCount(ksql.WhereMap{{"muserid", "=", muserid, ""}})
 		ans_max := (uint64)(util.StrToInt(kses.GetSession(suuid, "ans_max").Value, 10))
-		if ans_count + 1 >= ans_max {
-			cont.JSON(http.StatusOK, CreateJsonError("FinishedMatch", "finish the match", ""))
-			return
-		}
 
-		if answer := cont.PostForm("answer"); len(answer) != 0 {
-			qidv := kses.GetSession(suuid, "questid")
-			if qidv == nil {
-				cont.JSON(http.StatusOK, CreateJsonError("GetSessionError", "get questid error", ""))
+		qidv := kses.GetSession(suuid, "questid")
+		answer := util.CleanStr(cont.PostForm("answer"))
+
+		if ans_count < ans_max && qidv != nil {
+			if len(answer) == 0 {
+				cont.JSON(http.StatusOK, CreateJsonError("IllegalDataException", "answer can't be empty", ""))
 				return
 			}
 			var score int = 0
@@ -166,7 +165,7 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 					ksql.TypeMap{"answer": ksql.TYPE_String},
 					ksql.WhereMap{{"id", "=", questid, "AND"}, {"verified", "=", true, ""}}, 1)
 				if err != nil || len(lines) != 1 {
-					cont.JSON(http.StatusOK, CreateJsonError("GetQuestionError", "get question answer error", ""))
+					cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "get question answer error", ""))
 					return
 				}
 				std_answer := util.JsonToString(lines[0]["answer"])
@@ -176,13 +175,26 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 					score = 0
 				}
 			}
-			sqlMatchAnswerTable.SqlInsert(ksql.Map{
+			err := sqlMatchAnswerTable.SqlInsert(ksql.Map{
 				"muserid": muserid,
 				"questid": questid,
 				"answer": answer,
 				"score": score,
 			})
+			if err != nil {
+				cont.JSON(http.StatusOK, CreateJsonError("SqlInsertError", "insert answer error", err.Error()))
+				return
+			}
+			ans_count++
 		}
+
+		if ans_count >= ans_max {
+			kses.RemoveSession(suuid, "ans_max")
+			kses.RemoveSession(suuid, "questid")
+			cont.JSON(http.StatusOK, CreateJsonError("FinishedMatch", "finish the match", ""))
+			return
+		}
+
 		{
 			questcount := sqlQuestTable.DataCount(ksql.WhereMap{{"verified", "=", true, ""}})
 			if questcount == 0 {
@@ -193,7 +205,7 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 			lines, err := sqlQuestTable.SqlSearchOff(
 				ksql.TypeMap{"id": ksql.TYPE_Uint32}, ksql.WhereMap{{"verified", "=", true, ""}}, randindex, 1)
 			if err != nil || len(lines) != 1 {
-				cont.JSON(http.StatusOK, CreateJsonError("GetQuestionError", "get question error", ""))
+				cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "get question error", ""))
 				return
 			}
 			questid = util.JsonToUint32(lines[0]["id"])
@@ -225,6 +237,10 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 			cont.JSON(http.StatusOK, CreateJsonError("GetMatchIdError", "parse match token error", err.Error()))
 			return
 		}
+
+		kses.RemoveSession(suuid, "ans_max")
+		kses.RemoveSession(suuid, "questid")
+
 		muserid = util.JsonToString(jwtdata["data"])
 		cont.JSON(http.StatusOK, gin.H{
 			"status": "ok",
@@ -258,8 +274,17 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 
 func (questPageSrc)matchcheckGetPage(cont *gin.Context){
 	muserid := cont.Query("muserid")
+	lines, err := sqlMatchUserTable.SqlSearch(
+			ksql.TypeMap{"userid": ksql.TYPE_Uint32},
+			ksql.WhereMap{{"id", "=", muserid, ""}}, 1)
+	if err != nil || len(lines) != 1 {
+		cont.JSON(http.StatusOK, CreateJsonError("NoMatchUserFound", "no matchid found", ""))
+		return
+	}
+	userid := util.JsonToUint32(lines[0]["userid"])
 	cont.HTML(http.StatusOK, "quest/matchcheck.html", gin.H{
 		"muserid": muserid,
+		"userid": userid,
 	})
 }
 

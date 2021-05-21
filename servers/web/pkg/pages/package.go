@@ -31,4 +31,5 @@ func InitAllPage(eng *gin.Engine, logger_ *klog.Logger, sqloper_ *ksql.Operator,
 	(indexPageSrc)(0).Init()
 	(userPageSrc)(0).Init()
 	(questPageSrc)(0).Init()
+	(managerPageSrc)(0).Init()
 }

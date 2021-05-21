@@ -47,7 +47,5 @@ func (configSource)Init(){
 
 func init(){
 	logger = klog.NewLogger("svrweb")
-	util.AssertError(logger.Conn(), "Connect logger server error: ")
 	sqloper = ksql.NewOperator("svrweb")
-	util.AssertError(sqloper.Conn(), "Connect sql server err:")
 }

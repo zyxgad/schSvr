@@ -35,10 +35,15 @@ func (lgr *Logger)Close()(err error){
 }
 
 func (lgr *Logger)send(msg string)(err error){
+	if !lgr.cli.IsConn() {
+		lgr.Conn()
+	}
+
 	pkt := utcp.NewPacket(nil)
 	pkt.SetString(msg)
 
-	return lgr.cli.SendPkt(pkt)
+	err = lgr.cli.SendPkt(pkt)
+	return
 }
 
 /************************************************************/

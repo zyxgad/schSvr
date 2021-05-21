@@ -7,6 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="/web/static/css/util/font">
 		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
 		<script type="text/javascript">
+			const userid = Number.parseInt("{{.userid}}");
 			const muserid = "{{.muserid}}";
 		</script>
 		<script type="text/javascript" src="/web/static/js/quest/matchcheck"></script>
@@ -14,16 +15,15 @@
 	<body>
 		<div id="match_body">
 			<div id="match-info">
-				<span id="match-info-score"></span>
+				<div id="match-info-username"></div>
+				<div id="match-info-score"></div>
 			</div>
 			<div id="match-answers">
 				<div id="match-answers-head">
-					<div class="match-answers-item">
-						<span class="match-answers-item-id">题号</span>
-						<span class="match-answers-item-quest">问题</span>
-						<span class="match-answers-item-answer">你的答案</span>
-						<span class="match-answers-item-score">得分</span>
-					</div>
+					<span id="match-answers-head-id">题号</span>
+					<span id="match-answers-head-quest">问题</span>
+					<span id="match-answers-head-answer">你的答案</span>
+					<span id="match-answers-head-score">得分</span>
 				</div>
 				<div id="match-answers-box">
 					<!-- <div class="match-answers-item">

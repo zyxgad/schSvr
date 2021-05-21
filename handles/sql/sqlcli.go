@@ -36,6 +36,10 @@ func (opr *Operator)Close()(err error){
 }
 
 func (opr *Operator)send(data util.JsonType)(err error){
+	if !opr.cli.IsConn() {
+		opr.Conn()
+	}
+
 	pkt := utcp.NewPacket(nil)
 	pkt.SetJson(data)
 
@@ -43,6 +47,10 @@ func (opr *Operator)send(data util.JsonType)(err error){
 }
 
 func (opr *Operator)recv()(data util.JsonType, err error){
+	if !opr.cli.IsConn() {
+		opr.Conn()
+	}
+
 	var pkt utcp.Packet
 	pkt, err = opr.cli.RecvPkt()
 	if err != nil {

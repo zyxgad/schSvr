@@ -62,4 +62,14 @@ $(document).ready(function(){
 			console.log("error res:", res);
 		}
 	});
+	$.ajax({
+		url: "/web/user/info/" + userid,
+		type: "POST",
+		success: function(res){
+			if(res.status === "ok"){
+				const userdata = res.data;
+				$("#match-info-username").text(userdata.username);
+			}
+		}
+	})
 });

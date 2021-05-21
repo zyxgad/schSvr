@@ -31,13 +31,13 @@ $(document).ready(function(){
 	userdescDOM.hide();
 	$("#header-user-info").click(function(){
 		userdescDOM.fadeToggle(100);
-	})
+	});
 	$("#header-user-desc-closemount").click(function(){
 		userdescDOM.fadeOut(100);
-	})
+	});
 	$("#header-user-info-head img:first").bind("error", function(){
 		this.src = EMPTY_IMG;
-	})
+	});
 	$("#header-user-desc-logoutbtn").click(function(){
 		if(!confirm("Are you sure to log out?")){
 			return;
@@ -52,8 +52,8 @@ $(document).ready(function(){
 					return;
 				}
 			}
-		})
-	})
+		});
+	});
 
 	$.ajax({
 		url: "/web/user/info",
@@ -67,5 +67,5 @@ $(document).ready(function(){
 				return;
 			}
 		}
-	})
-})
+	});
+});

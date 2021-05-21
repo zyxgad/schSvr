@@ -1,9 +1,10 @@
 
 
-var questionID = 0;
-
 function nextquestion(){
-	const answer = $("#answer-text").val();
+	const ANSWER_INPUT = $("#answer-text");
+	const QUEST_BODY = $("#question-body-text");
+
+	const answer = ANSWER_INPUT.val();
 	$.ajax({
 		url: "/web/quest/match/getnext",
 		type: "POST",
@@ -12,31 +13,37 @@ function nextquestion(){
 		},
 		success: function(res){
 			if(res.status === "ok"){
-				questionID = res.questid;
+				ANSWER_INPUT.val("");
 				$("#quest-count").text(res.count + "/" + res.max_count);
 				$.ajax({
 					url: "/web/quest/search",
 					type: "POST",
 					data: {
-						id: questionID
+						id: res.questid
 					},
 					success: function(res){
 						if(res.status === "ok"){
-							let questdata = res.data;
-							console.log("res data:", questdata);
-							let qlines = questdata["quest"].split("\n")
-							const qnode = $("#question-text");
-							qnode.html("");
-							for(let i = 0;i < qlines.length;i++){
-								qnode.append("<p>" + qlines[i] + "</p>")
-							}
-							// questdata.owner;
+							const questdata = res.data;
+							QUEST_BODY.html("");
+							questdata.quest.split("\n").forEach((item)=>{
+								QUEST_BODY.append($(`<div class="question-body-text-line"></div>`).text(item))
+							});
+							$.ajax({
+								url: "/web/user/info/" + questdata.owner,
+								type: "POST",
+								success: function(res){
+									if(res.status === "ok"){
+										const userdata = res.data;
+										$("#question-body-info-owner").text(userdata.username);
+										return;
+									}
+								}
+							})
 							return;
 						}
-						console.log("res:", res);
+						console.log("error res:", res);
 					}
 				})
-				console.log("next question id:", questionID);
 				return;
 			}
 			if(res.error !== undefined){
@@ -73,6 +80,17 @@ function nextquestion(){
 }
 
 $(document).ready(function(){
+	$.ajax({
+		url: "/web/user/info",
+		type: "POST",
+		success: function(res){
+			if(res.status !== "ok"){
+				alert("您需要先去登录");
+				window.location = "/web/user/login";
+				return;
+			}
+		}
+	});
 	$("#start_page").show();
 	$("#start-btn").click(function(){
 		const matchid = $("#matchid-input").val();
@@ -118,4 +136,10 @@ $(document).ready(function(){
 		});
 	});
 	$("#submit-btn").click(nextquestion);
+	$("#answer-text").keydown(function(event){
+		if(event.key == "Enter" || event.keyCode == 13){
+			event.preventDefault();
+			$("#submit-btn").click();
+		}
+	});
 })
