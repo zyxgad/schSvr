@@ -23,13 +23,13 @@ func (questPageSrc)putPostPage(cont *gin.Context){
 	suuid := updateClientUuid(cont)
 	user := getLoginUser(suuid)
 	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "the user is not login", ""))
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
 		return
 	}
 	quest := util.CleanStr(cont.PostForm("question"))
 	answer := util.CleanStr(cont.PostForm("answer"))
 	if len(quest) == 0 || len(answer) == 0 {
-		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "the question/answer is illegal data", ""))
+		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "question/answer is illegal data", ""))
 		return
 	}
 	sqlQuestTable.SqlInsert(ksql.Map{
@@ -41,7 +41,87 @@ func (questPageSrc)putPostPage(cont *gin.Context){
 	cont.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+func (questPageSrc)listGetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_v_quest {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+
+	lines, err := sqlQuestTable.SqlSearch(ksql.TypeMap{
+		"id": ksql.TYPE_Uint32,
+		"quest": ksql.TYPE_String,
+		"answer": ksql.TYPE_String,
+		"owner": ksql.TYPE_Uint32,
+		"verified": ksql.TYPE_Bool,
+	}, ksql.WhereMap{}, 0)
+	if err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "sql select error", err.Error()))
+		return
+	}
+	var data []gin.H = make([]gin.H, 0, len(lines))
+	for _, l := range lines {
+		data = append(data, gin.H{
+			"id": util.JsonToUint32(l["id"]),
+			"quest": util.JsonToString(l["quest"]),
+			"answer": util.JsonToString(l["answer"]),
+			"owner": util.JsonToUint32(l["owner"]),
+			"verified": util.JsonToBool(l["verified"]),
+		})
+	}
+	cont.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"data": data,
+	})
+}
+
+func (questPageSrc)setPostPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_v_quest {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+	qid := (uint32)(util.StrToInt(cont.Param("id"), 10))
+	if !sqlQuestTable.HasData(ksql.WhereMap{{"id", "=", qid, ""}}) {
+		cont.JSON(http.StatusOK, CreateJsonError("NoQuestionFound", "no question id", ""))
+		return
+	}
+
+	var json map[string]interface{}
+	if err := cont.ShouldBindJSON(&json); err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("BindJsonError", "bind json body error", err.Error()))
+		return
+	}
+	for k, v := range json {
+		switch k {
+		case "question":
+			sqlQuestTable.SqlUpdate(ksql.Map{"question": util.JsonToString(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
+		case "answer":
+			sqlQuestTable.SqlUpdate(ksql.Map{"answer": util.JsonToString(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
+		case "verified":
+			sqlQuestTable.SqlUpdate(ksql.Map{"verified": util.JsonToBool(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
+		}
+	}
+	cont.JSON(http.StatusOK, gin.H{ "status": "ok" })
+}
+
 func (questPageSrc)searchPostPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
 	qid := (uint32)(util.StrToInt(cont.PostForm("id"), 10))
 	lines, err := sqlQuestTable.SqlSearch(ksql.TypeMap{
 		"quest": ksql.TYPE_String,
@@ -254,7 +334,7 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 			"score": ksql.TYPE_Int32,
 		}, ksql.WhereMap{{"muserid", "=", muserid, ""}}, 0)
 		if err != nil {
-			cont.JSON(http.StatusOK, CreateJsonError("SqlSearchError", "sql search error", err.Error()))
+			cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "sql select error", err.Error()))
 			return
 		}
 		var answers []gin.H = make([]gin.H, 0, len(lines))
@@ -292,6 +372,8 @@ func (page questPageSrc)Init(){
 	questGroup := engine.Group("quest");{
 		questGroup.GET("/put", page.putGetPage)
 		questGroup.POST("/put", page.putPostPage)
+		questGroup.GET("/list", page.listGetPage)
+		questGroup.POST("/info/:id/set", page.setPostPage)
 		questGroup.POST("/search", page.searchPostPage)
 		questGroup.GET("/match", page.matchGetPage)
 		questGroup.POST("/match/:mode", page.matchPostPage)

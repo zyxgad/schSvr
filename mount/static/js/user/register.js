@@ -24,7 +24,7 @@ $(document).ready(function(){
 		const username = $('#register-box-username-input').val();
 		const errbox = $('#register-box-username-error');
 		if(!namereg.test(username)){
-			errbox.text("不是合法用户名");
+			errbox.text("用户名需以字母或'_'开头,仅能含有数字/字母/'_',长度4-32");
 			errbox.show();
 			shakeBox(errbox);
 			return false;
@@ -37,7 +37,7 @@ $(document).ready(function(){
 		const password = $('#register-box-password-input').val();
 		const errbox = $('#register-box-password-error');
 		if(!pwdreg.test(password)){
-			errbox.text("不是合法密码");
+			errbox.text("密码需以字母开头,仅能含有数字/字母/'_',长度8-128");
 			errbox.show();
 			shakeBox(errbox);
 			return false;
@@ -97,7 +97,7 @@ $(document).ready(function(){
 	$('#register-box-manager-input').blur(checkManagerVal);
 	$('#register-box-captcha-input').blur(checkCaptchaVal);
 	$('#register-box-captcha-img').click(updateCaptcha);
-	$('#register-box-submit').keydown(function(event){ event.preventDefault(); });
+	$('#register-box-submit').keydown(function(event){ if(event.key == "Enter" || event.keyCode == 13){ event.preventDefault(); } });
 	$('#register-box-submit').click(function(){
 		let okname = checkUsernameVal(), okpwd = checkPasswordVal(), okmgr = checkManagerVal(), okcapt = checkCaptchaVal();
 		if(!okname || !okpwd || !okmgr || !okcapt){

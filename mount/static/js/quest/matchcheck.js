@@ -22,8 +22,8 @@ function appendAnswer(item){
 		success: function(res){
 			if(res.status === "ok"){
 				quest_node.html("");
-				res.data["quest"].split("\n").forEach((item)=>{
-					quest_node.append("<p>" + item + "</p>")
+				res.data.quest.split("\n").forEach((item)=>{
+					quest_node.append($(`<p></p>`).text(item));
 				});
 				return;
 			}

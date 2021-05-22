@@ -65,7 +65,7 @@ $(document).ready(function(){
 	$('#login-box-password-input').blur(checkPasswordVal);
 	$('#login-box-captcha-input').blur(checkCaptchaVal);
 	$('#login-box-captcha-img').click(updateCaptcha);
-	$('#login-box-submit').keydown(function(event){ event.preventDefault(); })
+	$('#login-box-submit').keydown(function(event){ if(event.key == "Enter" || event.keyCode == 13){ event.preventDefault(); } });
 	$('#login-box-submit').click(function(){
 		let okname = checkUsernameVal(), okpwd = checkPasswordVal(), okcapt = checkCaptchaVal();
 		if(!okname || !okpwd || !okcapt){
