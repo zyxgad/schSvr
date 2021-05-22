@@ -66,12 +66,18 @@ func (lgr *Logger)Debugf(format string, obj ...interface{})(err error){
 }
 
 func (lgr *Logger)Infoln(obj ...interface{})(err error){
+	if !kutil.IsDebug(){
+		return nil
+	}
 	str := util.JoinObjStr(obj...)
 	msg := util.FormatStr("[%s:INFO][%s]: %s", lgr.name, getFmtTime(false), str)
 	return lgr.send(msg)
 }
 
 func (lgr *Logger)Infof(format string, obj ...interface{})(err error){
+	if !kutil.IsDebug(){
+		return nil
+	}
 	str := util.FormatStr(format, obj...)
 	msg := util.FormatStr("[%s:INFO][%s]: %s", lgr.name, getFmtTime(false), str)
 	return lgr.send(msg)

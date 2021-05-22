@@ -51,7 +51,7 @@ func Connect(){
 		panic(err)
 		return
 	}
-	logger.Infoln("Connect mysql succeed")
+	logger.Warnln("Connect mysql succeed")
 }
 
 func CloseConn()(error){

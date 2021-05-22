@@ -46,7 +46,7 @@ func (serverSource)Init(){
 }
 
 func StartServer(){
-	logger.Infoln("Server starting...")
+	logger.Warnln("Web server starting...")
 
 	// logger.Infoln("Gin", gin.Version)
 	// logger.Infof("Server run at %s:%s", HOST, PORT)

@@ -57,6 +57,7 @@ function makequestcheckbox(disabled, questdata, key, title){
 function flushUser(udata){
 	const userauths = udata.auths;
 	$("#user-verifies").show();
+	$("#user-verifies-body").html("");
 	$.ajax({
 		async: true,
 		url: "/web/user/myinfo/children",
@@ -100,6 +101,7 @@ function flushUser(udata){
 function flushQuest(udata){
 	const userauths = udata.auths;
 	$("#quest-verifies").show();
+	$("#quest-verifies-body").html("");
 	$.ajax({
 		async: true,
 		url: "/web/quest/list",
@@ -119,7 +121,16 @@ function flushQuest(udata){
 </div>`);
 				$("#quest-verifies-body").append(uvitem);
 				uvitem.children(".quest-verifies-item-id:first").text(questdata.id);
-				uvitem.children(".quest-verifies-item-user:first").text(questdata.owner);
+				$.ajax({
+					url: "/web/user/info/" + questdata.owner + "/info",
+					type: "GET",
+					success: function(res){
+						if(res.status === "ok"){
+							uvitem.children(".quest-verifies-item-user:first").text(res.data.username);
+							return;
+						}
+					}
+				})
 				let quest_node = uvitem.children(".quest-verifies-item-quest:first");
 				quest_node.html("");
 				questdata.quest.split("\n").forEach((item)=>{
@@ -133,13 +144,15 @@ function flushQuest(udata){
 }
 
 $(document).ready(function(){
+	var userdata = null;
+	var userauths = null;
 	$.ajax({
 		url: "/web/user/myinfo/auth",
 		type: "GET",
 		success: function(res){
 			if(res.status === "ok"){
-				const userdata = res.data;
-				const userauths = userdata.auths;
+				userdata = res.data;
+				userauths = userdata.auths;
 				$("#user-info-name").text(userdata.username);
 				Object.keys(userauths).forEach((key)=>{
 					$("#user-info-auth").append(
@@ -155,5 +168,10 @@ $(document).ready(function(){
 			}
 		}
 	});
-	$("#user-verifies-flush-btn")
+	$("#user-verifies-flush-btn").click(function(){
+		flushUser(userdata);
+	})
+	$("#quest-verifies-flush-btn").click(function(){
+		flushQuest(userdata);
+	})
 });

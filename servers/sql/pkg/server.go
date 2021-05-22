@@ -99,5 +99,6 @@ func (serverSource)Init(){
 }
 
 func StartServer(){
+	logger.Warnln("Sql server starting...")
 	server.ServerStart(serverPacketCall)
 }

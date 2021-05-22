@@ -47,7 +47,7 @@ func (serverSource)Init(){
 }
 
 func StartServer(){
-	logger.Infoln("Proxy starting...")
+	logger.Warnln("Proxy starting...")
 
 	server = &http.Server{
 		Addr:         HOST + ":" + PORT,
