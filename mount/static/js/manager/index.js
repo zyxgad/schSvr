@@ -1,8 +1,5 @@
 
 
-
-
-
 function makecheckbox(disabled, userdata, key, title){
 	var vcheckbox = $(`<input type="checkbox" />`);
 	vcheckbox.prop("disabled", disabled)
