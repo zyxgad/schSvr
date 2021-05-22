@@ -28,6 +28,8 @@ type SqlUserType struct{
 	Verified     bool
 	Frozen       bool
 	Manager      uint32
+	Op_v_user    bool
+	Op_v_quest   bool
 }
 
 func hashUserPwd(user *SqlUserType)(hashc string){
@@ -42,6 +44,8 @@ func getUser(wheremap ksql.WhereMap)(user *SqlUserType){
 		"verified": ksql.TYPE_Bool,
 		"frozen": ksql.TYPE_Bool,
 		"manager": ksql.TYPE_Uint32,
+		"op_v_user": ksql.TYPE_Bool,
+		"op_v_quest": ksql.TYPE_Bool,
 	}, wheremap, 1)
 	if err != nil || len(lines) != 1 {
 		return nil
@@ -55,6 +59,8 @@ func getUser(wheremap ksql.WhereMap)(user *SqlUserType){
 		Verified: util.JsonToBool(line["verified"]),
 		Frozen: util.JsonToBool(line["frozen"]),
 		Manager: util.JsonToUint32(line["manager"]),
+		Op_v_user: util.JsonToBool(line["op_v_user"]),
+		Op_v_quest: util.JsonToBool(line["op_v_quest"]),
 	}
 }
 
@@ -67,13 +73,12 @@ func getUserByName(name string)(user *SqlUserType){
 }
 
 func updateUserById(user *SqlUserType)(err error){
-	user.ShaPwd = hashUserPwd(user)
 	err = sqlUserTable.SqlUpdate(ksql.Map{
-		"username": user.Username,
-		"password": user.ShaPwd,
 		"verified": user.Verified,
 		"frozen": user.Frozen,
 		"manager": user.Manager,
+		"op_v_user": user.Op_v_user,
+		"op_v_quest": user.Op_v_quest,
 	}, ksql.WhereMap{{"id", "=", user.Id, ""}})
 	return err
 }
@@ -89,12 +94,13 @@ func createUser(user *SqlUserType)(err error){
 	user.Verified = false
 	user.Frozen = false
 	err = sqlUserTable.SqlInsert(ksql.Map{
-		"id": user.Id,
 		"username": user.Username,
 		"password": user.ShaPwd,
 		"verified": user.Verified,
 		"frozen": user.Frozen,
-		// "manager": user.Manager,
+		"manager": user.Manager,
+		"op_v_user": user.Op_v_user,
+		"op_v_quest": user.Op_v_quest,
 	})
 	return err
 }

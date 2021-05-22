@@ -14,6 +14,22 @@ function updateUserdata(){
 }
 
 $(document).ready(function(){
+	$.ajax({
+		url: "/web/user/myinfo/info",
+		type: "GET",
+		success: function(res){
+			if(res.error !== undefined){
+				alert("您还没有登录，请先登录");
+				window.location = "/web/user/login";
+				return;
+			}
+			if(res.status === "ok" && res.data !== undefined){
+				userdata = res.data;
+				updateUserdata();
+				return;
+			}
+		}
+	});
 
 	$("#user-info-head-choose-file").bind("change", function(event){
 		if(this.files.length == 0){
@@ -81,22 +97,5 @@ $(document).ready(function(){
 				}
 			}
 		});
-	});
-
-	$.ajax({
-		url: "/web/user/info",
-		type: "POST",
-		success: function(res){
-			if(res.error !== undefined){
-				alert("您还没有登录，请先登录");
-				window.location = "/web/user/login";
-				return;
-			}
-			if(res.status === "ok" && res.data !== undefined){
-				userdata = res.data;
-				updateUserdata();
-				return;
-			}
-		}
 	});
 })

@@ -63,8 +63,8 @@ $(document).ready(function(){
 		}
 	});
 	$.ajax({
-		url: "/web/user/info/" + userid,
-		type: "POST",
+		url: "/web/user/info/" + userid + "/info",
+		type: "GET",
 		success: function(res){
 			if(res.status === "ok"){
 				const userdata = res.data;

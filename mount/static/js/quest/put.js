@@ -1,6 +1,18 @@
 
 
 $(document).ready(function(){
+	$.ajax({
+		url: "/web/user/myinfo/info",
+		type: "GET",
+		success: function(res){
+			if(res.status !== "ok"){
+				alert("您需要先去登录");
+				window.location = "/web/user/login";
+				return;
+			}
+		}
+	});
+
 	$("#subject-submit-btn").click(function(){
 		var quest = $("#subject-question-text").val();
 		var answer = $("#subject-answer-text").val();

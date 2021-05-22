@@ -9,7 +9,35 @@
 		<script type="text/javascript" src="/web/static/js/manager/index"></script>
 	</head>
 	<body>
-		<h1>Manager</h1>
+		<div id="body">
+			<div id="user-info">
+				<span id="user-info-name"></span>
+				<div id="user-info-auth">
+					拥有权限:
+					<!-- <span class="user-info-auth-line"></span> -->
+				</div>
+			</div>
+			<div id="user-verifies" style="display: none;">
+				<div id="user-verifies-head">
+						<span id="user-verifies-head-id">用户ID</span>
+						<span id="user-verifies-head-name">用户名</span>
+						<span id="user-verifies-head-status">用户状态</span>
+						<span id="user-verifies-head-verified">已验证</span>
+						<span id="user-verifies-head-v_user">允许验证用户</span>
+						<span id="user-verifies-head-v_quest">允许审核问题</span>
+				</div>
+				<div id="user-verifies-body">
+					<!-- <div class="user-verifies-item">
+						<span class="user-verifies-item-id"></span>
+						<span class="user-verifies-item-name"></span>
+						<span class="user-verifies-item-status"></span>
+						<span class="user-verifies-item-verified"></span>
+						<span class="user-verifies-item-v_user"></span>
+						<span class="user-verifies-item-v_quest"></span>
+					</div> -->
+				</div>
+			</div>
+		</div>
 	</body>
 </html>
 {{ end }}

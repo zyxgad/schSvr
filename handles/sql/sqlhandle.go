@@ -3,7 +3,7 @@ package kpnmsqlcli
 
 import(
 	util "github.com/zyxgad/go-util/util"
-	utcp "github.com/zyxgad/go-util/tcp"
+	// utcp "github.com/zyxgad/go-util/tcp"
 )
 
 type SqlTable interface{
@@ -30,7 +30,6 @@ type Table struct{
 
 	name string
 	opr *Operator
-	conn *utcp.Client
 }
 
 func (tb *Table)Name()(string){
@@ -196,15 +195,15 @@ func (tb *Table)DataCount(cond WhereMap)(leng uint64){
 }
 
 func (tb *Table)sendAndRecv(data util.JsonType)(res util.JsonType, err error){
-	tb.opr.Lock()
-	defer tb.opr.Unlock()
+	conn := tb.opr.Getconn()
+	defer tb.opr.Freeconn(conn)
 
-	err = tb.opr.send(data)
+	err = conn.send(data)
 	if err != nil {
 		return nil, err
 	}
 
-	res, err = tb.opr.recv()
+	res, err = conn.recv()
 	if err != nil {
 		return nil, err
 	}

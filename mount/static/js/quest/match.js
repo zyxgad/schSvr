@@ -29,8 +29,8 @@ function nextquestion(){
 								QUEST_BODY.append($(`<div class="question-body-text-line"></div>`).text(item))
 							});
 							$.ajax({
-								url: "/web/user/info/" + questdata.owner,
-								type: "POST",
+								url: "/web/user/info/" + questdata.owner + "/info",
+								type: "GET",
 								success: function(res){
 									if(res.status === "ok"){
 										const userdata = res.data;
@@ -81,8 +81,8 @@ function nextquestion(){
 
 $(document).ready(function(){
 	$.ajax({
-		url: "/web/user/info",
-		type: "POST",
+		url: "/web/user/myinfo/info",
+		type: "GET",
 		success: function(res){
 			if(res.status !== "ok"){
 				alert("您需要先去登录");

@@ -13,8 +13,8 @@ function updateUserdata(){
 
 $(document).ready(function(){
 	$.ajax({
-		url: "/web/user/info/" + userid,
-		type: "POST",
+		url: "/web/user/info/" + userid + "/info",
+		type: "GET",
 		success: function(res){
 			if(res.error !== undefined){
 				console.log("error:", res);

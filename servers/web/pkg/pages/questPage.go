@@ -36,7 +36,7 @@ func (questPageSrc)putPostPage(cont *gin.Context){
 		"quest": quest,
 		"answer": answer,
 		"owner": user.Id,
-		"verified": false,
+		"verified": user.Op_v_quest,
 	})
 	cont.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

@@ -14,6 +14,12 @@ import (
 type managerPageSrc int
 
 func (managerPageSrc)indexGetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.Redirect(http.StatusFound, "/")
+		return
+	}
 	cont.HTML(http.StatusOK, "manager/index.html", gin.H{
 	})
 }

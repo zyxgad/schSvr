@@ -56,8 +56,8 @@ $(document).ready(function(){
 	});
 
 	$.ajax({
-		url: "/web/user/info",
-		type: "POST",
+		url: "/web/user/myinfo/info",
+		type: "GET",
 		success: function(res){
 			if(res.error !== undefined){
 				return;

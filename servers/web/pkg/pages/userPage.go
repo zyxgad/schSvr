@@ -7,6 +7,7 @@ import (
 
 	gin  "github.com/gin-gonic/gin"
 	util "github.com/zyxgad/go-util/util"
+	ksql "github.com/zyxgad/schSvr/handles/sql"
 	kses "github.com/zyxgad/schSvr/handles/sql/session"
 	krbt "github.com/zyxgad/schSvr/robot"
 )
@@ -57,9 +58,6 @@ func getUserByStrid(userid string)(user *SqlUserType){
 	if user == nil {
 		return nil
 	}
-	if !user.Verified {
-		return nil
-	}
 	return user
 }
 
@@ -103,12 +101,12 @@ func (userPageSrc)LoginPostPage(cont *gin.Context){
 	password := cont.PostForm("password")
 
 	if !reg_name.MatchString(username) {
-		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "the username is illegal data", ""))
+		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "username is illegal data", ""))
 		return
 	}
 	user = getUserByName(username)
 	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotExistException", "the user is not exist", ""))
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotExistException", "user is not exist", ""))
 		return
 	}
 
@@ -133,7 +131,7 @@ func (userPageSrc)LoginPostPage(cont *gin.Context){
 	cont.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-func (userPageSrc)LogoutPage(cont *gin.Context){
+func (userPageSrc)LogoutPostPage(cont *gin.Context){
 	suuid := updateClientUuid(cont)
 	loginuser := kses.GetSession(suuid, "loginuser")
 	if loginuser != nil {
@@ -171,17 +169,29 @@ func (userPageSrc)RegisterPostPage(cont *gin.Context){
 
 	username := cont.PostForm("username")
 	password := cont.PostForm("password")
-	if !reg_name.MatchString(username) || !reg_pwd.MatchString(password) {
-		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "the username/password is illegal data", ""))
+	manager := cont.PostForm("manager")
+	if !reg_name.MatchString(username) || !reg_pwd.MatchString(password) || !reg_name.MatchString(manager) {
+		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "username/password/manager is illegal data", ""))
 		return
+	}
+
+	var mid uint32
+	{
+		muser := getUserByName(manager)
+		if muser == nil || !muser.Op_v_user {
+			cont.JSON(http.StatusOK, CreateJsonError("UserNotFound", "can not found manager user", ""))
+			return
+		}
+		mid = muser.Id
 	}
 
 	user := &SqlUserType{
 		Username: username,
 		Password: password,
+		Manager: mid,
 	}
 	if err := createUser(user); err != nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserExistException", "the user is exist", err.Error()))
+		cont.JSON(http.StatusOK, CreateJsonError("UserExistException", "user is exist", err.Error()))
 		return
 	}
 
@@ -227,38 +237,19 @@ func (userPageSrc)InfoGetPage(cont *gin.Context){
 	})
 }
 
-func (userPageSrc)InfoPostPage(cont *gin.Context){
-	userid := cont.Param("id")
-	if !util.StrIsInt(userid, 10) {
-		cont.JSON(http.StatusOK, CreateJsonError("UseridIllegalException", "userid is must be a number", ""))
-		return
-	}
-	user := getUserByStrid(userid)
-	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotExistException", "the user is not exist", ""))
-		return
-	}
-	cont.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"data": gin.H{
-			"userid": user.Id,
-			"username": user.Username,
-		},
-	})
-}
-
 func (userPageSrc)InfoResPage(cont *gin.Context){
 	userid := cont.Param("id")
 	if !util.StrIsInt(userid, 10) {
-		cont.JSON(http.StatusOK, CreateJsonError("UseridIllegalException", "userid is must be a number", ""))
+		cont.JSON(http.StatusNotFound, CreateJsonError("UseridIllegalException", "userid is must be a number", ""))
 		return
 	}
 	user := getUserByStrid(userid)
 	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotExistException", "the user is not exist", ""))
+		cont.JSON(http.StatusNotFound, CreateJsonError("UserNotExistException", "user is not exist", ""))
 		return
 	}
-	switch cont.Param("mode") {
+	mode := cont.Param("mode")
+	switch mode {
 	case "head":
 		fd, err := os.Open(util.JoinPath(USER_DATA_PATH, util.JoinObjStr(user.Id), "head.png"))
 		if err != nil {
@@ -270,24 +261,129 @@ func (userPageSrc)InfoResPage(cont *gin.Context){
 		}
 		cont.Status(http.StatusOK)
 		util.MustCopyWR(cont.Writer, fd)
+		return
+	}
+	var response gin.H = gin.H{
+		"userid": user.Id,
+		"username": user.Username,
+		"verified": user.Verified,
+		"frozen": user.Frozen,
+		"op_v_user": user.Op_v_user,
+		"op_v_quest": user.Op_v_quest,
+	}
+	switch mode {
+	case "info":
+	case "auth":
+		response["auths"] = gin.H{
+			"v_user": user.Op_v_user,
+			"v_quest": user.Op_v_quest,
+		}
+	case "children":
+		lines, err := sqlUserTable.SqlSearch(ksql.TypeMap{"id": ksql.TYPE_Uint32}, ksql.WhereMap{{"manager", "=", user.Id, ""}}, 0)
+		if err != nil {
+			cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "search user error", err.Error()))
+		}
+		children := make([]uint32, 0, len(lines))
+		for _, l := range lines {
+			children = append(children, util.JsonToUint32(l["id"]))
+		}
+		response["children"] = children
 	default:
 		cont.JSON(http.StatusNotFound, CreateJsonError("NoModelException", "don't have the model's partten", ""))
-	}
-}
-
-func (userPageSrc)MyInfoPostPage(cont *gin.Context){
-	suuid := updateClientUuid(cont)
-	user := getLoginUser(suuid)
-	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "the user is not login", ""))
 		return
 	}
 	cont.JSON(http.StatusOK, gin.H{
 		"status": "ok",
-		"data": gin.H{
-			"userid": user.Id,
-			"username": user.Username,
-		},
+		"data": response,
+	})
+}
+
+func (userPageSrc)InfoSetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_v_user {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+	userid := cont.Param("id")
+	if !util.StrIsInt(userid, 10) {
+		cont.JSON(http.StatusOK, CreateJsonError("UseridIllegalException", "userid is must be a number", ""))
+		return
+	}
+	targetuser := getUserByStrid(userid)
+	if targetuser == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotExistException", "user is not exist", ""))
+		return
+	}
+	if targetuser.Manager != user.Id {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+	var json map[string]interface{}
+	if err := cont.ShouldBindJSON(&json); err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("BindJsonError", "bind json body error", err.Error()))
+		return
+	}
+	for k, v := range json {
+		switch k {
+		case "frozen":
+			targetuser.Frozen = util.JsonToBool(v)
+		case "verified":
+			targetuser.Verified = util.JsonToBool(v)
+		case "op_v_user":
+			targetuser.Op_v_user = util.JsonToBool(v)
+		case "op_v_quest":
+			if user.Op_v_quest {
+				targetuser.Op_v_quest = util.JsonToBool(v)
+			}
+		}
+	}
+	if err := updateUserById(targetuser); err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("SqlUpdateError", "update user data error", err.Error()))
+		return
+	}
+	cont.JSON(http.StatusOK, gin.H{ "status": "ok" })
+}
+
+func (userPageSrc)MyInfoGetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	var response gin.H = gin.H{
+		"userid": user.Id,
+		"username": user.Username,
+	}
+	switch cont.Param("mode") {
+	case "info":
+	case "auth":
+		response["auths"] = gin.H{
+			"v_user": user.Op_v_user,
+			"v_quest": user.Op_v_quest,
+		}
+	case "children":
+		lines, err := sqlUserTable.SqlSearch(ksql.TypeMap{"id": ksql.TYPE_Uint32}, ksql.WhereMap{{"manager", "=", user.Id, ""}}, 0)
+		if err != nil {
+			cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "search user error", err.Error()))
+		}
+		children := make([]uint32, 0, len(lines))
+		for _, l := range lines {
+			children = append(children, util.JsonToUint32(l["id"]))
+		}
+		response["children"] = children
+	default:
+		cont.JSON(http.StatusNotFound, CreateJsonError("NoModelException", "don't have the model's partten", ""))
+		return
+	}
+	cont.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"data": response,
 	})
 }
 
@@ -300,7 +396,7 @@ func (userPageSrc)SetDataPage(cont *gin.Context){
 	suuid := updateClientUuid(cont)
 	user := getLoginUser(suuid)
 	if user == nil {
-		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "the user is not login", ""))
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
 		return
 	}
 
@@ -342,14 +438,14 @@ func (page userPageSrc)Init(){
 	userGroup := engine.Group("user");{
 		userGroup.GET("/login", page.LoginGetPage)
 		userGroup.POST("/login", page.LoginPostPage)
-		userGroup.POST("/logout", page.LogoutPage)
+		userGroup.POST("/logout", page.LogoutPostPage)
 		userGroup.GET("/register", page.RegisterGetPage)
 		userGroup.POST("/register", page.RegisterPostPage)
 		userGroup.GET("/captcha/:mode", page.CaptchaGetPage)
 		userGroup.GET("/info/:id", page.InfoGetPage)
-		userGroup.POST("/info/:id", page.InfoPostPage)
 		userGroup.GET("/info/:id/:mode", page.InfoResPage)
-		userGroup.POST("/info", page.MyInfoPostPage)
+		userGroup.POST("/info/:id/set", page.InfoSetPage)
+		userGroup.GET("/myinfo/:mode", page.MyInfoGetPage)
 		userGroup.GET("/setting", page.SettingPage)
 		userGroup.POST("/setting/set/:mode", page.SetDataPage)
 	}

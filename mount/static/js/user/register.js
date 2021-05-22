@@ -63,6 +63,19 @@ $(document).ready(function(){
 		errbox.text("");
 		return true;
 	}
+	function checkManagerVal(){
+		const manager = $('#register-box-manager-input').val();
+		const errbox = $('#register-box-manager-error');
+		if(!namereg.test(manager)){
+			errbox.text("不是合法用户名");
+			errbox.show();
+			shakeBox(errbox);
+			return false;
+		}
+		errbox.hide();
+		errbox.text("");
+		return true;
+	}
 	function checkCaptchaVal(){
 		const captcode = $('#register-box-captcha-input').val();
 		const errbox = $('#register-box-captcha-error');
@@ -81,16 +94,18 @@ $(document).ready(function(){
 	$('#register-box-username-input').blur(checkUsernameVal);
 	$('#register-box-password-input').blur(checkPasswordVal);
 	$('#register-box-pwdagain-input').blur(checkPwdagainVal);
+	$('#register-box-manager-input').blur(checkManagerVal);
 	$('#register-box-captcha-input').blur(checkCaptchaVal);
 	$('#register-box-captcha-img').click(updateCaptcha);
 	$('#register-box-submit').keydown(function(event){ event.preventDefault(); });
 	$('#register-box-submit').click(function(){
-		let okname = checkUsernameVal(), okpwd = checkPasswordVal(), okcapt = checkCaptchaVal();
-		if(!okname || !okpwd || !okcapt){
-			return
+		let okname = checkUsernameVal(), okpwd = checkPasswordVal(), okmgr = checkManagerVal(), okcapt = checkCaptchaVal();
+		if(!okname || !okpwd || !okmgr || !okcapt){
+			return;
 		}
 		const username = $('#register-box-username-input').val();
 		const password = $('#register-box-password-input').val();
+		const manager = $('#register-box-manager-input').val();
 		const captcode = $('#register-box-captcha-input').val();
 		const errorbox = $('#register-box-error');
 		$.ajax({
@@ -99,6 +114,7 @@ $(document).ready(function(){
 			data: {
 				username: username,
 				password: password,
+				manager: manager,
 				captcode: captcode
 			},
 			success: function(res){

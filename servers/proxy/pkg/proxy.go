@@ -10,7 +10,59 @@ import (
 )
 
 
-func newProxy(target string)(func(cont *gin.Context)){
+type proxyResWriter struct{
+	baseroute string
+
+	writer http.ResponseWriter
+
+	wrote bool
+	wroteHeader bool
+	movedres bool
+}
+
+func newProxyWriter(writer http.ResponseWriter, baseroute string)(http.ResponseWriter){
+	return &proxyResWriter{
+		baseroute: baseroute,
+		writer: writer,
+		wrote: false,
+		wroteHeader: false,
+		movedres: false,
+	}
+}
+
+func (w *proxyResWriter)Header()(http.Header){
+	return w.writer.Header()
+}
+
+func (w *proxyResWriter)Write(data []byte)(n int, err error){
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
+	if !w.wrote {
+		if w.movedres && len(data) > 0 && data[0] == '/' {
+			w.writer.Write(([]byte)(w.baseroute))
+		}
+	}
+	return w.writer.Write(data)
+}
+
+func (w *proxyResWriter)WriteHeader(statusCode int){
+	if !w.wroteHeader {
+		w.writer.WriteHeader(statusCode)
+		w.wroteHeader = true
+		switch statusCode {
+		case
+			http.StatusMovedPermanently,
+			http.StatusFound,
+			http.StatusSeeOther,
+			http.StatusTemporaryRedirect,
+			http.StatusPermanentRedirect:
+			w.movedres = true
+		}
+	}
+}
+
+func newProxy(target string, baseroute string)(func(cont *gin.Context)){
 	return func(cont *gin.Context){
 		proxy := &httputil.ReverseProxy{
 			Director: func(req *http.Request) {
@@ -28,7 +80,8 @@ func newProxy(target string)(func(cont *gin.Context)){
 				})))
 			},
 		}
-		proxy.ServeHTTP(cont.Writer, cont.Request)
+		pwriter := newProxyWriter(cont.Writer, baseroute)
+		proxy.ServeHTTP(pwriter, cont.Request)
 	}
 }
 
@@ -41,6 +94,6 @@ func (proxySrc)Init(){
 	})
 	webGroup := engine.Group("web");{
 		host, port := readIpConfigFile(util.JoinPath("/", "var", "server", ".config", "servers", "web.txt"))
-		webGroup.Any("/*route", newProxy(host + ":" + port))
+		webGroup.Any("/*route", newProxy(host + ":" + port, "web"))
 	}
 }
