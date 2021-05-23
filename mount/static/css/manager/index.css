@@ -22,7 +22,7 @@
 
 #user-verifies{
 	margin-top: 30px;
-	width: 580px;
+	width: 650px;
 }
 
 #user-verifies-head, #user-verifies-body{
@@ -61,13 +61,9 @@
 	display: inline-block;
 }
 
-#user-verifies-head-v_user, .user-verifies-item-v_user{
-	width: 100px;
-	border: 1px solid #000000;
-	display: inline-block;
-}
-
-#user-verifies-head-v_quest, .user-verifies-item-v_quest{
+#user-verifies-head-v_user, .user-verifies-item-v_user,
+#user-verifies-head-v_quest, .user-verifies-item-v_quest,
+#user-verifies-head-c_match, .user-verifies-item-c_match{
 	width: 100px;
 	border: 1px solid #000000;
 	display: inline-block;
@@ -76,7 +72,7 @@
 
 #quest-verifies{
 	margin-top: 30px;
-	width: 760px;
+	width: 800px;
 }
 
 #quest-verifies-head, #quest-verifies-body{
@@ -119,4 +115,68 @@
 	width: 60px;
 	border: 1px solid #000000;
 	display: inline-block;
+}
+
+#quest-verifies-head-delete, .quest-verifies-item-delete{
+	width: 60px;
+	border: 1px solid #000000;
+	display: inline-block;	
+}
+
+#match-list{
+	margin-top: 30px;
+	width: 700px;
+}
+
+#match-list-head, #match-list-body, #match-list-create{
+	width: 100%;
+	border: 1px solid #000000;
+}
+
+#match-list-head, .match-list-item, #match-list-create{
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+}
+
+#match-list-head-id, .match-list-item-id, #match-list-create-id{
+	width: 300px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+#match-list-head-questnum, .match-list-item-questnum, #match-list-create-questnum{
+	width: 80px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+#match-list-head-using, .match-list-item-using, #match-list-create-using{
+	width: 60px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+#match-list-head-joined, .match-list-item-joined, #match-list-create-joined{
+	width: 100px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+#match-list-head-delete, .match-list-item-delete, #match-list-create-btn{
+	width: 60px;
+	border: 1px solid #000000;
+	display: inline-block;	
+}
+
+#match-list-head-search, .match-list-item-search, #match-list-create-search{
+	width: 60px;
+	border: 1px solid #000000;
+	display: inline-block;
+}
+
+#match-list-create-questnum>input{
+	width: 70px;
+	height: 25px;
 }

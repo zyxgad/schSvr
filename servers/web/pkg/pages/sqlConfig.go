@@ -30,6 +30,7 @@ type SqlUserType struct{
 	Manager      uint32
 	Op_v_user    bool
 	Op_v_quest   bool
+	Op_c_match   bool
 }
 
 func hashUserPwd(user *SqlUserType)(hashc string){
@@ -46,6 +47,7 @@ func getUser(wheremap ksql.WhereMap)(user *SqlUserType){
 		"manager": ksql.TYPE_Uint32,
 		"op_v_user": ksql.TYPE_Bool,
 		"op_v_quest": ksql.TYPE_Bool,
+		"op_c_match": ksql.TYPE_Bool,
 	}, wheremap, 1)
 	if err != nil || len(lines) != 1 {
 		return nil
@@ -61,6 +63,7 @@ func getUser(wheremap ksql.WhereMap)(user *SqlUserType){
 		Manager: util.JsonToUint32(line["manager"]),
 		Op_v_user: util.JsonToBool(line["op_v_user"]),
 		Op_v_quest: util.JsonToBool(line["op_v_quest"]),
+		Op_c_match: util.JsonToBool(line["op_c_match"]),
 	}
 }
 
@@ -79,6 +82,7 @@ func updateUserById(user *SqlUserType)(err error){
 		"manager": user.Manager,
 		"op_v_user": user.Op_v_user,
 		"op_v_quest": user.Op_v_quest,
+		"op_c_match": user.Op_c_match,
 	}, ksql.WhereMap{{"id", "=", user.Id, ""}})
 	return err
 }
@@ -101,6 +105,7 @@ func createUser(user *SqlUserType)(err error){
 		"manager": user.Manager,
 		"op_v_user": user.Op_v_user,
 		"op_v_quest": user.Op_v_quest,
+		"op_c_match": user.Op_c_match,
 	})
 	return err
 }
@@ -121,7 +126,9 @@ func frozenUser(user *SqlUserType, frozen bool)(ok bool){
 }
 
 func setUserB64Head(b64data string, user *SqlUserType)(ok bool){
-	imgpath := util.JoinPath(USER_DATA_PATH, util.JoinObjStr(user.Id), "head.png")
+	datapath := util.JoinPath(USER_DATA_PATH, util.JoinObjStr(user.Id))
+	util.CreateDir(datapath)
+	imgpath := util.JoinPath(datapath, "head.png")
 	if len(b64data) == 0 {
 		util.RemoveFile(imgpath)
 		return true

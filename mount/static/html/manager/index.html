@@ -1,63 +1,124 @@
-{{ define "manager/index.html" }}
+{{define "manager/index.html"}}
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Index</title>
+		<title>
+			Manager
+		</title>
+		<link rel="icon" type="image/png" href="/web/static/images/fav.png" sizes="64x64">
 		<link rel="stylesheet" type="text/css" href="/web/static/css/manager/index">
-		<link rel="stylesheet" type="text/css" href="/web/static/css/util/font">
-		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
-		<script type="text/javascript" src="/web/static/js/manager/index"></script>
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0">
+		</script>
+		<script type="text/javascript" src="/web/static/js/manager/index">
+		</script>
 	</head>
 	<body>
 		<div id="body">
 			<div id="user-info">
-				<span id="user-info-name"></span>
+				<span id="user-info-name">
+				</span>
 				<div id="user-info-auth">
 					拥有权限:
-					<!-- <span class="user-info-auth-line"></span> -->
 				</div>
 			</div>
-			<div id="user-verifies" style="display: none;">
-				<input id="user-verifies-flush-btn" type="button" value="刷新" />
+			<div id="user-verifies" style="display:none">
+				<input id="user-verifies-flush-btn" type="button" value="刷新">
 				<div id="user-verifies-head">
-						<span id="user-verifies-head-id">用户ID</span>
-						<span id="user-verifies-head-name">用户名</span>
-						<span id="user-verifies-head-status">用户状态</span>
-						<span id="user-verifies-head-verified">已验证</span>
-						<span id="user-verifies-head-v_user">允许验证用户</span>
-						<span id="user-verifies-head-v_quest">允许审核问题</span>
+					<span id="user-verifies-head-id">
+						用户ID
+					</span>
+					<span id="user-verifies-head-name">
+						用户名
+					</span>
+					<span id="user-verifies-head-status">
+						用户状态
+					</span>
+					<span id="user-verifies-head-verified">
+						已验证
+					</span>
+					<span id="user-verifies-head-v_user">
+						允许验证用户
+					</span>
+					<span id="user-verifies-head-v_quest">
+						允许审核问题
+					</span>
+					<span id="user-verifies-head-c_match">
+						允许创建比赛
+					</span>
 				</div>
 				<div id="user-verifies-body">
-					<!-- <div class="user-verifies-item">
-						<span class="user-verifies-item-id"></span>
-						<span class="user-verifies-item-name"></span>
-						<span class="user-verifies-item-status"></span>
-						<span class="user-verifies-item-verified"></span>
-						<span class="user-verifies-item-v_user"></span>
-						<span class="user-verifies-item-v_quest"></span>
-					</div> -->
 				</div>
 			</div>
-			<div id="quest-verifies" style="display: none;">
-				<input id="quest-verifies-flush-btn" type="button" value="刷新" />
+			<div id="quest-verifies" style="display:none">
+				<input id="quest-verifies-flush-btn" type="button" value="刷新">
 				<div id="quest-verifies-head">
-						<span id="quest-verifies-head-id">问题ID</span>
-						<span id="quest-verifies-head-user">用户名</span>
-						<span id="quest-verifies-head-quest">问题</span>
-						<span id="quest-verifies-head-answer">答案</span>
-						<span id="quest-verifies-head-verified">已验证</span>
+					<span id="quest-verifies-head-id">
+						问题ID
+					</span>
+					<span id="quest-verifies-head-user">
+						贡献者
+					</span>
+					<span id="quest-verifies-head-quest">
+						问题
+					</span>
+					<span id="quest-verifies-head-answer">
+						答案
+					</span>
+					<span id="quest-verifies-head-verified">
+						已验证
+					</span>
+					<span id="quest-verifies-head-delete">
+						删除
+					</span>
 				</div>
 				<div id="quest-verifies-body">
-					<!-- <div class="quest-verifies-item">
-						<span class="quest-verifies-item-id"></span>
-						<span class="quest-verifies-item-user"></span>
-						<span class="quest-verifies-item-quest"></span>
-						<span class="quest-verifies-item-answer"></span>
-						<span class="quest-verifies-item-verified"></span>
-					</div> -->
+				</div>
+			</div>
+			<div id="match-list" style="display:none">
+				<input id="match-list-flush-btn" type="button" value="刷新">
+				<div id="match-list-head">
+					<span id="match-list-head-id">
+						比赛ID
+					</span>
+					<span id="match-list-head-questnum">
+						答题数量
+					</span>
+					<span id="match-list-head-using">
+						开启
+					</span>
+					<span id="match-list-head-joined">
+						参与人数
+					</span>
+					<span id="match-list-head-delete">
+						删除
+					</span>
+					<span id="match-list-head-search">
+						查看
+					</span>
+				</div>
+				<div id="match-list-body">
+				</div>
+				<div id="match-list-create">
+					<span id="match-list-create-id">*</span>
+					<span id="match-list-create-questnum">
+						<input value="10" type="number" min="1" />
+					</span>
+					<span id="match-list-create-using">
+						<input type="checkbox" />
+					</span>
+					<span id="match-list-create-joined">
+						*
+					</span>
+					<span id="match-list-create-btn">
+						<input type="button" value="创建" />
+					</span>
+					<span id="match-list-create-search">
+						*
+					</span>
 				</div>
 			</div>
 		</div>
 	</body>
+
 </html>
-{{ end }}
+{{end}}

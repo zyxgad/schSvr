@@ -270,6 +270,7 @@ func (userPageSrc)InfoResPage(cont *gin.Context){
 		"frozen": user.Frozen,
 		"op_v_user": user.Op_v_user,
 		"op_v_quest": user.Op_v_quest,
+		"op_c_match": user.Op_c_match,
 	}
 	switch mode {
 	case "info":
@@ -277,6 +278,7 @@ func (userPageSrc)InfoResPage(cont *gin.Context){
 		response["auths"] = gin.H{
 			"v_user": user.Op_v_user,
 			"v_quest": user.Op_v_quest,
+			"c_match": user.Op_c_match,
 		}
 	case "children":
 		lines, err := sqlUserTable.SqlSearch(ksql.TypeMap{"id": ksql.TYPE_Uint32}, ksql.WhereMap{{"manager", "=", user.Id, ""}}, 0)
@@ -340,6 +342,10 @@ func (userPageSrc)InfoSetPage(cont *gin.Context){
 			if user.Op_v_quest {
 				targetuser.Op_v_quest = util.JsonToBool(v)
 			}
+		case "op_c_match":
+			if user.Op_c_match {
+				targetuser.Op_c_match = util.JsonToBool(v)
+			}
 		}
 	}
 	if err := updateUserById(targetuser); err != nil {
@@ -366,6 +372,7 @@ func (userPageSrc)MyInfoGetPage(cont *gin.Context){
 		response["auths"] = gin.H{
 			"v_user": user.Op_v_user,
 			"v_quest": user.Op_v_quest,
+			"c_match": user.Op_c_match,
 		}
 	case "children":
 		lines, err := sqlUserTable.SqlSearch(ksql.TypeMap{"id": ksql.TYPE_Uint32}, ksql.WhereMap{{"manager", "=", user.Id, ""}}, 0)

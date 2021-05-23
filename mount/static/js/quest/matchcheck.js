@@ -56,7 +56,7 @@ $(document).ready(function(){
 						score: item.score
 					});
 				});
-				$("#match-info-score").text(score_count + "/" + score_max)
+				$("#match-info-score").text(score_count + "/" + score_max);
 				return;
 			}
 			console.log("error res:", res);

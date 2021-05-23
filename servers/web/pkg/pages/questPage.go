@@ -104,6 +104,12 @@ func (questPageSrc)setPostPage(cont *gin.Context){
 	}
 	for k, v := range json {
 		switch k {
+		case "delete":
+			if util.JsonToBool(v) {
+				sqlQuestTable.SqlDelete(ksql.WhereMap{{"id", "=", qid, ""}})
+				cont.JSON(http.StatusOK, gin.H{ "status": "ok" })
+				return
+			}
 		case "question":
 			sqlQuestTable.SqlUpdate(ksql.Map{"question": util.JsonToString(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
 		case "answer":
@@ -149,6 +155,154 @@ func (questPageSrc)matchGetPage(cont *gin.Context){
 	})
 }
 
+func (questPageSrc)matchCreatePostPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_c_match {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+	questnum := (int)(util.StrToInt(cont.PostForm("questnum"), 10))
+	using := cont.PostForm("using")
+	if questnum <= 0 {
+		cont.JSON(http.StatusOK, CreateJsonError("IllegalArgumentException", "questnum is illegal data", ""))
+		return
+	}
+	mid := util.UUID2Hex(util.NewUUID())
+	err := sqlMatchTable.SqlInsert(ksql.Map{
+		"id": mid,
+		"questnum": questnum,
+		"using": using == "true",
+	})
+	if err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("SqlInsertError", "insert match error", err.Error()))
+		return
+	}
+	cont.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func (questPageSrc)matchlistGetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_c_match {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+
+	lines, err := sqlMatchTable.SqlSearch(ksql.TypeMap{
+		"id": ksql.TYPE_String,
+		"questnum": ksql.TYPE_Int32,
+		"using": ksql.TYPE_Bool,
+	}, ksql.WhereMap{}, 0)
+	if err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "select matchlist error", err.Error()))
+		return
+	}
+	var data []gin.H = make([]gin.H, 0, len(lines))
+	for _, l := range lines {
+		mid := util.JsonToString(l["id"])
+		joined := sqlMatchUserTable.DataCount(ksql.WhereMap{{"matchid", "=", mid, ""}})
+		data = append(data, gin.H{
+			"id": mid,
+			"questnum": util.JsonToInt32(l["questnum"]),
+			"using": util.JsonToBool(l["using"]),
+			"joined": joined,
+		})
+	}
+	cont.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"data": data,
+	})
+}
+
+func (questPageSrc)matchuserlistGetPage(cont *gin.Context){
+	mid := cont.Param("id")
+	cont.HTML(http.StatusOK, "quest/matchuserlist.html", gin.H{
+		"matchid": mid,
+	})
+}
+
+func (questPageSrc)matchlistUserGetPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_c_match {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+
+	mid := cont.Param("id")
+	lines, err := sqlMatchUserTable.SqlSearch(ksql.TypeMap{
+		"id": ksql.TYPE_String,
+		"userid": ksql.TYPE_Uint32,
+	}, ksql.WhereMap{{"matchid", "=", mid, ""}}, 0)
+	if err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("SqlSelectError", "select matchuser list error", err.Error()))
+		return
+	}
+	var data []gin.H = make([]gin.H, 0, len(lines))
+	for _, l := range lines {
+		data = append(data, gin.H{
+			"id": util.JsonToString(l["id"]),
+			"userid": util.JsonToUint32(l["userid"]),
+		})
+	}
+	cont.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+		"data": data,
+	})
+}
+
+func (questPageSrc)matchInfoSetPostPage(cont *gin.Context){
+	suuid := updateClientUuid(cont)
+	user := getLoginUser(suuid)
+	if user == nil {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNotLogin", "user is not login", ""))
+		return
+	}
+	if !user.Op_c_match {
+		cont.JSON(http.StatusOK, CreateJsonError("UserNoPermission", "user no permission", ""))
+		return
+	}
+	qid := cont.Param("id")
+	if !sqlMatchTable.HasData(ksql.WhereMap{{"id", "=", qid, ""}}) {
+		cont.JSON(http.StatusOK, CreateJsonError("NoQuestionFound", "no match id", ""))
+		return
+	}
+
+	var json map[string]interface{}
+	if err := cont.ShouldBindJSON(&json); err != nil {
+		cont.JSON(http.StatusOK, CreateJsonError("BindJsonError", "bind json body error", err.Error()))
+		return
+	}
+	for k, v := range json {
+		switch k {
+		case "delete":
+			if util.JsonToBool(v) {
+				sqlMatchTable.SqlDelete(ksql.WhereMap{{"id", "=", qid, ""}})
+				cont.JSON(http.StatusOK, gin.H{ "status": "ok" })
+				return
+			}
+		case "questnum":
+			sqlMatchTable.SqlUpdate(ksql.Map{"questnum": util.JsonToUint64(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
+		case "using":
+			sqlMatchTable.SqlUpdate(ksql.Map{"using": util.JsonToBool(v)}, ksql.WhereMap{{"id", "=", qid, ""}})
+		}
+	}
+	cont.JSON(http.StatusOK, gin.H{ "status": "ok" })
+}
+
 func (questPageSrc)matchPostPage(cont *gin.Context){
 	suuid := updateClientUuid(cont)
 	user := getLoginUser(suuid)
@@ -162,13 +316,9 @@ func (questPageSrc)matchPostPage(cont *gin.Context){
 			err error
 			lines []ksql.Map
 		)
-		if tk, err := cont.Cookie("matchid"); err == nil && len(tk) != 0 {
-			cont.JSON(http.StatusOK, CreateJsonError("UserPrepared", "user is prepared", ""))
-			return
-		}
 		matchid := cont.PostForm("matchid")
 		lines, err = sqlMatchTable.SqlSearch(
-			ksql.TypeMap{ "questnum": ksql.TYPE_Uint32 }, ksql.WhereMap{{"id", "=", matchid, ""}}, 1)
+			ksql.TypeMap{ "questnum": ksql.TYPE_Uint32 }, ksql.WhereMap{{"id", "=", matchid, "AND"}, {"using", "=", true, ""}}, 1)
 		if err != nil || len(lines) != 1 {
 			cont.JSON(http.StatusOK, CreateJsonError("NoMatchForUser", "there are no match for user", ""))
 			return
@@ -376,6 +526,11 @@ func (page questPageSrc)Init(){
 		questGroup.POST("/info/:id/set", page.setPostPage)
 		questGroup.POST("/search", page.searchPostPage)
 		questGroup.GET("/match", page.matchGetPage)
+		questGroup.POST("/matchcreate", page.matchCreatePostPage)
+		questGroup.GET("/matchlist", page.matchlistGetPage)
+		questGroup.GET("/matchlist/:id", page.matchlistUserGetPage)
+		questGroup.GET("/matchuserlist/:id", page.matchuserlistGetPage)
+		questGroup.POST("/matchinfo/:id/set", page.matchInfoSetPostPage)
 		questGroup.POST("/match/:mode", page.matchPostPage)
 		questGroup.GET("/matchcheck", page.matchcheckGetPage)
 	}

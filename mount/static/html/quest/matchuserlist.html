@@ -1,0 +1,20 @@
+{{define "quest/matchuserlist.html"}}
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>matchuserlist</title>
+		<link rel="icon" type="image/png" href="/web/static/images/fav.png" sizes="64x64">
+		<link rel="stylesheet" type="text/css" href="/web/static/css/quest/matchuserlist">
+		<script type="text/javascript" src="/web/static/js/libs/jquery-3.6.0"></script>
+		<script type="text/javascript">
+			const matchid = "{{.matchid}}";
+		</script>
+		<script type="text/javascript" src="/web/static/js/quest/matchuserlist"></script>
+	</head>
+	<body>
+		<div id="muser-list">
+			<div id="muser-list-body"></div>
+		</div>
+	</body>
+</html>
+{{end}}

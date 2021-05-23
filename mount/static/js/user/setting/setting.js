@@ -31,14 +31,14 @@ $(document).ready(function(){
 		}
 	});
 
-	$("#user-info-head-choose-file").bind("change", function(event){
+	$("#user-info-head-choose-file").bind("change", function(){
 		if(this.files.length == 0){
 			return;
 		}
 		const file = this.files[0];
 		const fsize = file.size;
-		if(fsize > 1024 * 32){
-			alert("头像大小不能大于32Kb");
+		if(fsize > 1024 * 256){
+			alert("头像大小不能大于256Kb");
 			return;
 		}
 		var reader = new FileReader();
